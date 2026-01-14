@@ -82,11 +82,22 @@ export default function CaptionGenerator() {
       {error && <p className="text-red-500">{error}</p>}
 
       {caption && (
-        <textarea
-          className="w-full p-3 border rounded"
-          value={caption}
-          onChange={(e) => setCaption(e.target.value)}
-        />
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <h3 className="font-semibold text-lg">Generated Caption:</h3>
+            <button
+              onClick={() => navigator.clipboard.writeText(caption)}
+              className="px-3 py-1 bg-secondary text-secondary-foreground rounded text-sm hover:opacity-80 transition"
+            >
+              Copy
+            </button>
+          </div>
+          <textarea
+            className="w-full p-3 border rounded h-40"
+            value={caption}
+            onChange={(e) => setCaption(e.target.value)}
+          />
+        </div>
       )}
     </div>
   );
