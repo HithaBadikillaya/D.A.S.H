@@ -43,7 +43,7 @@
 
   --font-sekuya: 'Sekuya', sans-serif;
   --font-mono: 'Anonymous Pro', monospace;
-   --font-indie: 'Indie Flower', cursive;
+  --font-indie: 'Indie Flower', cursive;
 
   /* fonts
   --font-sans: "Inter", system-ui, sans-serif;
@@ -53,7 +53,7 @@
 :root {
   --radius: 0.625rem;
 
- 
+
 
   --background: oklch(100% 0.00011 271.152);
   --foreground: oklch(0.22 0 0);
@@ -134,5 +134,48 @@
   .scrollbar-none {
     scrollbar-width: none;
     -ms-overflow-style: none;
+  }
+
+  /* Custom Animations for Redesign */
+  .animate-pulse-slow {
+    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .animate-in {
+    animation-duration: 0.5s;
+    animation-timing-function: ease-out;
+    animation-fill-mode: both;
+  }
+
+  .fade-in {
+    opacity: 0;
+    animation-name: fadeIn;
+  }
+
+  .slide-in-from-bottom-8 {
+    --tw-enter-translate-y: 2rem;
+    animation-name: slideInFromBottom;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideInFromBottom {
+    from {
+      transform: translateY(2rem);
+      opacity: 0;
+    }
+
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
   }
 }
