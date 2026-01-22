@@ -4,6 +4,7 @@ import "./index.css";
 import Home from "./pages/Home";
 
 const CaptionGenerator = lazy(() => import("./pages/CaptionGenerator"));
+const LetterGenerator = lazy(() => import("./pages/LetterGenerator"));
 
 function App() {
   return (
@@ -15,6 +16,14 @@ function App() {
           element={
             <Suspense fallback={<div className="p-10 text-center">Loading Generator...</div>}>
               <CaptionGenerator />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/letters"
+          element={
+            <Suspense fallback={<div className="p-10 text-center">Loading Generator...</div>}>
+              <LetterGenerator />
             </Suspense>
           }
         />

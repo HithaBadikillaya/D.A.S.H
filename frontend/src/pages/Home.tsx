@@ -22,6 +22,12 @@ export default function Home() {
             >
                 Try Caption Generator →
             </Link>
+            <Link
+                to="/letters"
+                className="mt-6 px-6 py-3 bg-secondary text-secondary-foreground rounded-lg font-mono hover:opacity-90 transition"
+            >
+                Try Letter Generator →
+            </Link>
         </div>
     );
 }
