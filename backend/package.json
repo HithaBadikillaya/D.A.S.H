@@ -12,10 +12,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@google/genai": "^1.38.0",
     "@huggingface/inference": "^4.13.8",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
+    "gray-matter": "^4.0.3",
     "multer": "^2.0.2"
   },
   "devDependencies": {

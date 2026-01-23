@@ -3,6 +3,8 @@ node_modules/
 
 # Environment variables
 .env
+frontend/.env
+backend/.env
 
 # OS generated files
 .DS_Store
