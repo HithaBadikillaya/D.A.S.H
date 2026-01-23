@@ -12,6 +12,7 @@ router.get("/templates", async (req, res) => {
             templates,
         });
     } catch (error) {
+        console.error("GET /templates Error:", error);
         res.status(500).json({
             success: false,
             message: "Failed to load templates",
@@ -38,10 +39,18 @@ router.post("/generate", async (req, res) => {
             letter,
         });
     } catch (error) {
-        console.error(error);
+        console.error("POST /generate Error:", error);
+
+        if (error.code === "QUOTA_EXCEEDED") {
+            return res.status(429).json({
+                success: false,
+                message: "Usage limit exceeded. Please try again later.",
+            });
+        }
+
         res.status(500).json({
             success: false,
-            message: error.message || "Generation failed",
+            message: "Failed to generate letter",
         });
     }
 });
