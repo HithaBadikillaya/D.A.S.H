@@ -1,0 +1,16 @@
+{
+  "id": "funny",
+  "name": "funny",
+  "type": "Caption",
+  "tone": "witty",
+  "format": {
+    "sections": [
+      "intro"
+    ]
+  },
+  "style_rules": [
+    "bullet points"
+  ],
+  "prompt_instruction": "nothing much",
+  "is_system_template": false
+}

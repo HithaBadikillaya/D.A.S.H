@@ -1,0 +1,25 @@
+{
+  "id": "formal_mom",
+  "name": "Formal Minutes of Meeting",
+  "type": "mom",
+  "tone": "formal",
+  "format": {
+    "sections": [
+      "Meeting Details",
+      "Agenda",
+      "Discussion Points",
+      "Decisions Made",
+      "Action Items",
+      "Next Meeting"
+    ]
+  },
+  "style_rules": [
+    "Use professional and formal language",
+    "Write in third person",
+    "Use bullet points for clarity",
+    "Avoid emojis or casual expressions",
+    "Keep sentences concise and objective"
+  ],
+  "prompt_instruction": "Generate clear and structured minutes of meeting using the provided transcript and metadata. Ensure all sections are covered and written in a formal tone suitable for official documentation.",
+  "is_system_template": true
+}

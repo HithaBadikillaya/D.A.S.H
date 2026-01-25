@@ -1,0 +1,22 @@
+{
+  "id": "casual_caption",
+  "name": "Casual Caption",
+  "type": "caption",
+  "tone": "casual",
+  "format": {
+    "sections": [
+      "Hook",
+      "Main Message",
+      "Call To Action"
+    ]
+  },
+  "style_rules": [
+    "Use friendly and conversational language",
+    "Short sentences",
+    "Emojis are allowed",
+    "Avoid formal phrasing",
+    "Sound relatable and engaging"
+  ],
+  "prompt_instruction": "Create a casual and engaging caption based on the provided topic. Keep it short, fun, and suitable for social media.",
+  "is_system_template": false
+}
