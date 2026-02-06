@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import captionRoutes from "./routes/caption.routes.js";
+import letterRoutes from "./routes/letter.routes.js";
 
 dotenv.config();
 
@@ -38,6 +39,7 @@ app.get("/healthcheck", (_, res) => {
 });
 
 app.use("/api/captions", captionRoutes);
+app.use("/api/letters", letterRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
