@@ -5,6 +5,7 @@
 
 
 @import "tailwindcss";
+@import "./globals.css";
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
 

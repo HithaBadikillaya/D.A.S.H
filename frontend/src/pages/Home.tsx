@@ -90,11 +90,14 @@ function HeroSection() {
   );
 }
 
+import TemplateUsageGuide from "../components/TemplateUsageGuide";
+
 export default function Home() {
   return (
-    <main className="w-full bg-background min-h-screen overflow-x-hidden">
+    <main className="w-full bg-background min-h-screen">
       <HeroSection />
       <FeatureCards />
+      <TemplateUsageGuide />
       <Footer />
     </main>
   );

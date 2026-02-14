@@ -1,23 +1,58 @@
+@import "tailwindcss";
+
+@theme {
+  --color-border: hsl(214.3 31.8% 91.4%);
+  --color-input: hsl(214.3 31.8% 91.4%);
+  --color-ring: hsl(221.2 83.2% 53.3%);
+  --color-background: hsl(0 0% 100%);
+  --color-foreground: hsl(222.2 84% 4.9%);
+
+  --color-primary: hsl(221.2 83.2% 53.3%);
+  --color-primary-foreground: hsl(210 40% 98%);
+
+  --color-secondary: hsl(210 40% 96.1%);
+  --color-secondary-foreground: hsl(222.2 47.4% 11.2%);
+
+  --color-destructive: hsl(0 84.2% 60.2%);
+  --color-destructive-foreground: hsl(210 40% 98%);
+
+  --color-muted: hsl(210 40% 96.1%);
+  --color-muted-foreground: hsl(215.4 16.3% 46.9%);
+
+  --color-accent: hsl(210 40% 96.1%);
+  --color-accent-foreground: hsl(222.2 47.4% 11.2%);
+
+  --color-popover: hsl(0 0% 100%);
+  --color-popover-foreground: hsl(222.2 84% 4.9%);
+
+  --color-card: hsl(0 0% 100%);
+  --color-card-foreground: hsl(222.2 84% 4.9%);
+
+  --radius-lg: 0.5rem;
+  --radius-md: calc(0.5rem - 2px);
+  --radius-sm: calc(0.5rem - 4px);
+
+  /* Retro Palette */
+  --color-retro-red: hsl(4 81% 73%);
+  --color-retro-green: hsl(136 41% 65%);
+  --color-retro-yellow: hsl(44 96% 69%);
+  --color-retro-blue: hsl(210 52% 78%);
+  --color-retro-cyan: hsl(188 28% 60%);
+  --color-retro-cream: hsl(40 100% 99%);
+  --color-retro-beige: hsl(35 47% 85%);
+  --color-retro-accent: hsl(0 46% 51%);
+}
+
 @layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
-    
-    /* D.A.S.H Brand Colors */
-    --primary: 221 83% 53%; /* Your Primary Hex in HSL */
-    --primary-rgb: 37, 99, 235; /* Same color in RGB for glow effects */
-    
-    --secondary: 262 83% 58%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+  * {
+    @apply border-border;
   }
 
-  .dark {
-    --background: 222 47% 6%;
-    --foreground: 210 40% 98%;
-    --primary-rgb: 59, 130, 246;
+  body {
+    @apply bg-background text-foreground;
   }
 }
+
 
 /* Custom Font Integrations */
 @font-face {

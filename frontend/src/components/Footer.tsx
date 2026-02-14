@@ -6,9 +6,6 @@ const Footer = () => {
             {/* Decorative Background Elements */}
             <div className="absolute top-0 left-10 w-px h-full bg-[#EDDCC6] opacity-30"></div>
             <div className="absolute top-0 right-10 w-px h-full bg-[#EDDCC6] opacity-30"></div>
-            <div className="absolute bottom-4 left-0 w-full text-center text-[#EDDCC6]/20 font-mono text-[10rem] leading-none select-none pointer-events-none font-bold">
-                END
-            </div>
 
             <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 relative z-10">
                 {/* Brand Section */}
