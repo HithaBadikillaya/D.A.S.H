@@ -1,0 +1,11 @@
+{
+  "id": "3748191a-f962-41ec-9206-3c79ee38da46",
+  "name": "SOSC",
+  "category": "caption",
+  "structure": "Context + Hook + Body + conclusion",
+  "content": "Write a fun community social post about: {{inputText}} exclude generic words such as \"thrilled\" \"excited\" ",
+  "type": "user",
+  "createdBy": "Anonymous",
+  "createdAt": "2026-02-12T07:18:49.531Z",
+  "updatedAt": "2026-02-12T07:37:51.225Z"
+}
