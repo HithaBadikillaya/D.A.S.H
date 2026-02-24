@@ -16,13 +16,19 @@ import {
 
 const router = express.Router();
 
-// ---------------------------------------------------------------------------
-// Upload Configuration
-// ---------------------------------------------------------------------------
+const UPLOAD_DIR = path.resolve(process.cwd(), "uploads");
+console.log(`[MoM-Config] Upload directory: ${UPLOAD_DIR}`);
 
-const UPLOAD_DIR = path.join(process.cwd(), "uploads");
 if (!fs.existsSync(UPLOAD_DIR)) {
+    console.log(`[MoM-Config] Creating upload directory: ${UPLOAD_DIR}`);
     fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+} else {
+    // Verify writability
+    try {
+        fs.accessSync(UPLOAD_DIR, fs.constants.W_OK);
+    } catch (err) {
+        console.error(`[MoM-Config] FATAL: Upload directory is not writable: ${UPLOAD_DIR}`);
+    }
 }
 
 const CHUNK_MINUTES = parseInt(process.env.CHUNK_MINUTES, 10) || 7;
@@ -67,9 +73,7 @@ const upload = multer({
     },
 });
 
-// ---------------------------------------------------------------------------
 // POST /api/mom/upload-transcribe — async with job polling
-// ---------------------------------------------------------------------------
 
 router.post("/upload-transcribe", upload.single("file"), (req, res) => {
     if (!req.file) {
@@ -91,9 +95,7 @@ router.post("/upload-transcribe", upload.single("file"), (req, res) => {
     });
 });
 
-// ---------------------------------------------------------------------------
 // GET /api/mom/jobs/:jobId — poll for status
-// ---------------------------------------------------------------------------
 
 router.get("/jobs/:jobId", (req, res) => {
     const job = getJob(req.params.jobId);
@@ -111,9 +113,7 @@ router.get("/jobs/:jobId", (req, res) => {
     });
 });
 
-// ---------------------------------------------------------------------------
 // Background Processing Pipeline
-// ---------------------------------------------------------------------------
 
 async function processMediaJob(jobId, originalFilePath) {
     // All temp files will go into a per-job directory for easy cleanup
@@ -130,20 +130,20 @@ async function processMediaJob(jobId, originalFilePath) {
 
         const normalisedWav = await extractAndNormalizeAudio(originalFilePath, jobDir);
 
-        // --- Step 2: Chunk Audio ---
+        // Step 2: Chunk Audio 
         updateJob(jobId, { progress: 20, progressMessage: "Splitting audio into chunks…" });
 
         const chunkPaths = await splitAudioIntoChunks(normalisedWav, jobDir, CHUNK_MINUTES);
         console.log(`[MoM] Job ${jobId}: ${chunkPaths.length} chunk(s) created.`);
 
-        // --- Step 3: Transcribe Chunks ---
+        //Step 3: Transcribe Chunks 
         const transcription = await transcribeChunks(chunkPaths, (msg, pct) => {
-            // Map whisper progress (0-100) into the 30-90% range of overall progress
-            const overallPct = 30 + Math.round(pct * 0.6);
+            // Map whisper progress (0-100) into the 30-95% range of overall progress
+            const overallPct = 30 + Math.round(pct * 0.65);
             updateJob(jobId, { progress: overallPct, progressMessage: msg });
+            console.log(`[MoM] Job ${jobId} progress: ${overallPct}% - ${msg}`);
         });
 
-        // --- Done ---
         updateJob(jobId, {
             status: "completed",
             progress: 100,
@@ -151,7 +151,7 @@ async function processMediaJob(jobId, originalFilePath) {
             transcription,
         });
 
-        console.log(`[MoM] Job ${jobId}: completed (${transcription.length} chars).`);
+        console.log(`[MoM] Job ${jobId}: completed (${transcription.length} chars). Result: ${transcription.substring(0, 50)}...`);
     } catch (err) {
         console.error(`[MoM] Job ${jobId} FAILED:`, err.message);
         updateJob(jobId, {
@@ -161,7 +161,7 @@ async function processMediaJob(jobId, originalFilePath) {
             error: err.message,
         });
     } finally {
-        // --- Cleanup: original upload + temp job directory ---
+        // Cleanup: original upload + temp job directory 
         try {
             if (fs.existsSync(originalFilePath)) {
                 await fs.promises.rm(originalFilePath, { force: true });
@@ -174,9 +174,7 @@ async function processMediaJob(jobId, originalFilePath) {
     }
 }
 
-// ---------------------------------------------------------------------------
 // POST /api/mom/generate — MoM from transcript (unchanged)
-// ---------------------------------------------------------------------------
 
 router.post("/generate", async (req, res) => {
     try {
@@ -212,9 +210,7 @@ router.post("/generate", async (req, res) => {
     }
 });
 
-// ---------------------------------------------------------------------------
-// Template CRUD (unchanged)
-// ---------------------------------------------------------------------------
+// Template CRUD
 
 router.get("/templates", (req, res) => {
     try {
