@@ -2,9 +2,11 @@ import React, { useState } from "react";
 
 interface ResultsDisplayProps {
     generatedMoM: string;
+    onExpand: () => void;
+    isExpanding: boolean;
 }
 
-export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ generatedMoM }) => {
+export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ generatedMoM, onExpand, isExpanding }) => {
     if (!generatedMoM) return null;
 
     return (
@@ -20,7 +22,17 @@ export const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ generatedMoM }) 
                                 Your Meeting Minutes
                             </h4>
                         </div>
-                        <CopyButton text={generatedMoM} />
+                        <div className="flex gap-4">
+                            <button
+                                type="button"
+                                onClick={onExpand}
+                                disabled={isExpanding}
+                                className="px-8 py-4 rounded-full font-black text-sm tracking-tighter transition-all shadow-lg flex items-center gap-2 bg-primary/10 text-primary border-2 border-primary/20 hover:bg-primary/20 hover:scale-105 disabled:opacity-50 disabled:scale-100"
+                            >
+                                {isExpanding ? "EXPANDING..." : "EXPAND"}
+                            </button>
+                            <CopyButton text={generatedMoM} />
+                        </div>
                     </div>
 
                     <div className="relative group">

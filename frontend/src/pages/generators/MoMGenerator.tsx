@@ -120,15 +120,18 @@ export default function MoMGenerator() {
         }
     };
 
-    const handleGenerate = async () => {
+    const handleGenerate = async (length: "normal" | "longer" = "normal", currentContent?: string) => {
         if (!transcription.trim() || !selectedTemplateId) return;
         setIsGenerating(true);
         setGenerationError("");
+        if (length === "normal") setGeneratedMoM("");
         try {
             const mom = await generateMoM({
                 transcriptText: transcription,
                 templateId: selectedTemplateId,
                 meetingTitle: meetingTitle.trim() || undefined,
+                length,
+                currentContent
             });
             setGeneratedMoM(mom);
         } catch (error: any) {
@@ -136,6 +139,10 @@ export default function MoMGenerator() {
         } finally {
             setIsGenerating(false);
         }
+    };
+
+    const handleExpand = () => {
+        handleGenerate("longer", generatedMoM);
     };
 
     const handleSaveTemplate = async () => {
@@ -204,7 +211,7 @@ export default function MoMGenerator() {
                             transcription={transcription}
                             meetingTitle={meetingTitle}
                             setMeetingTitle={setMeetingTitle}
-                            handleGenerate={handleGenerate}
+                            handleGenerate={() => handleGenerate()}
                             isGenerating={isGenerating}
                             selectedTemplateId={selectedTemplateId}
                             templatesLoading={templatesLoading}
@@ -231,7 +238,11 @@ export default function MoMGenerator() {
                             handleDeleteTemplate={handleDeleteTemplate}
                         />
 
-                        <ResultsDisplay generatedMoM={generatedMoM} />
+                        <ResultsDisplay
+                            generatedMoM={generatedMoM}
+                            onExpand={handleExpand}
+                            isExpanding={isGenerating}
+                        />
                     </div>
                 </div>
             </div>

@@ -33,7 +33,7 @@ export default function CaptionGenerator() {
     }
   }, [captionTemplates, selectedTemplateId]);
 
-  const handleGenerate = async () => {
+  const handleGenerate = async (length: "normal" | "longer" = "normal", currentContent?: string) => {
     if (!inputText.trim()) {
       setError("Please enter some input text");
       return;
@@ -45,7 +45,7 @@ export default function CaptionGenerator() {
 
     setLoading(true);
     setError("");
-    setCaption("");
+    if (length === "normal") setCaption("");
 
     try {
       const result = await generateCaption({
@@ -53,6 +53,8 @@ export default function CaptionGenerator() {
         templateId: selectedTemplateId,
         platform,
         tone,
+        length,
+        currentContent
       });
 
       setCaption(result);
@@ -61,6 +63,10 @@ export default function CaptionGenerator() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleExpand = () => {
+    handleGenerate("longer", caption);
   };
 
   const openCreateModal = () => {
@@ -180,7 +186,7 @@ export default function CaptionGenerator() {
               />
               <button
                 type="button"
-                onClick={handleGenerate}
+                onClick={() => handleGenerate()}
                 disabled={loading || templatesLoading}
                 className="w-full py-5 bg-primary text-primary-foreground text-xl font-black rounded-2xl hover:brightness-110 shadow-lg active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-3 uppercase tracking-tighter"
               >
@@ -299,7 +305,17 @@ export default function CaptionGenerator() {
                         <span className="text-[10px] font-black text-primary tracking-[0.3em] uppercase">All done!</span>
                         <h4 className="text-3xl font-black text-foreground tracking-tighter">Here's your caption</h4>
                       </div>
-                      <ExportOptions content={caption} filename="caption" />
+                      <div className="flex gap-4">
+                        <button
+                          type="button"
+                          onClick={handleExpand}
+                          disabled={loading}
+                          className="px-8 py-4 rounded-full font-black text-sm tracking-tighter transition-all shadow-lg flex items-center gap-2 bg-primary/10 text-primary border-2 border-primary/20 hover:bg-primary/20 hover:scale-105 disabled:opacity-50 disabled:scale-100"
+                        >
+                          {loading ? "EXPANDING..." : "EXPAND"}
+                        </button>
+                        <ExportOptions content={caption} filename="caption" />
+                      </div>
                     </div>
 
                     <div className="relative group">

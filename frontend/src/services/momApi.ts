@@ -24,6 +24,8 @@ export interface MoMGenerateRequest {
     transcriptText: string;
     templateId: string;
     meetingTitle?: string;
+    length?: "normal" | "longer";
+    currentContent?: string;
 }
 
 export interface MoMGenerateResponse {

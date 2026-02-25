@@ -4,6 +4,8 @@ export type LetterRequest = {
     inputText: string;
     templateId: string;
     tone?: string;
+    length?: "normal" | "longer";
+    currentContent?: string;
 };
 
 export async function generateLetter(payload: LetterRequest): Promise<string> {

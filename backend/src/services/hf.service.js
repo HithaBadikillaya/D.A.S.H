@@ -18,21 +18,37 @@ if (!process.env.HF_API_KEY) {
  * Generates a concise social media caption using the chatCompletion API.
  * Uses only model, messages, max_tokens, and temperature as requested.
  */
-export async function generateCaption(prompt) {
+export async function generateCaption(prompt, length = "normal", currentContent = null) {
   try {
+    let systemContent = "You are a professional content writer. ";
+    let userPrompt = prompt;
+
+    if (length === "longer") {
+      if (currentContent) {
+        systemContent += "Your task is to ELONGATE and EXPAND the provided text. Keep the same core message and tone, but add significantly more detail, background context, and elaboration. Do NOT replace it entirely; build upon it.";
+        userPrompt = `Current Content to expand:\n"""\n${currentContent}\n"""\n\nOriginal Requirements/Context:\n${prompt}\n\nPlease provide a much more detailed and elongated version of the content above.`;
+      } else {
+        systemContent += "Provide more detail, elaborate on the points, and increase the word count significantly. Be descriptive and thorough.";
+      }
+    } else {
+      systemContent += "Be extremely brief, direct, and concise. Provide a high-level summary only. Minimal word count.";
+    }
+
+    systemContent += " Generate only requested content. No preamble, no meta-commentary.";
+
     const response = await hf.chatCompletion({
       model: MODEL,
       messages: [
         {
           role: "system",
-          content: "You are a social media copywriter. Generate only the caption text. No preamble, no hashtags."
+          content: systemContent
         },
         {
           role: "user",
-          content: prompt
+          content: userPrompt
         }
       ],
-      max_tokens: 500,
+      max_tokens: length === "longer" ? 2000 : 500,
       temperature: 0.7,
     });
 

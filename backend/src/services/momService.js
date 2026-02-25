@@ -14,9 +14,52 @@ if (!process.env.HF_API_KEY) {
  * Stage 1: Parallel extraction of key data points
  * Stage 2: Synthesis into final template
  */
-export async function generateMoM(transcriptText, template, meetingTitle = null) {
+export async function generateMoM(transcriptText, template, meetingTitle = null, length = "normal", currentContent = null) {
     try {
-        console.log(`[MoM Service] Starting multi-stage generation for: ${meetingTitle || 'Untitled Meeting'}`);
+        console.log(`[MoM Service] Starting multi-stage generation for: ${meetingTitle || 'Untitled Meeting'} (Length: ${length}, Expand: ${!!currentContent})`);
+
+        if (length === "longer" && currentContent) {
+            // Specialized expansion stage if we already have content
+            const expansionPrompt = `
+[Task: Elongate and Expand Existing Meeting Minutes]
+[Current MoM]:
+${currentContent}
+
+[Transcript for Reference]:
+${transcriptText.substring(0, 10000)}
+
+[Instruction]:
+Take the Current MoM and significantly expand upon every section.
+- Add more detail to the agenda points.
+- Provide background reasoning for decisions made.
+- Elaborate on the action items with more context.
+- Ensure the tone remains professional.
+- DO NOT summarize; ELABORATE.
+
+[Direct Output Only]:`.trim();
+
+            const expansionResponse = await hf.chatCompletion({
+                model: MODEL,
+                messages: [
+                    {
+                        role: "system",
+                        content: "You are a professional secretary. Your task is to ELONGATE and EXPAND the existing meeting minutes using the transcript for extra detail. No meta-commentary."
+                    },
+                    {
+                        role: "user",
+                        content: expansionPrompt
+                    }
+                ],
+                max_tokens: 4000,
+                temperature: 0.5,
+            });
+
+            return expansionResponse.choices[0].message.content.trim();
+        }
+
+        const lengthInstruction = length === "longer"
+            ? "Provide extensive detail, capturing nuances, background context for decisions, and comprehensive action item descriptions. Aim for a thorough and lengthy document."
+            : "Keep it extremely brief, high-level, and very concise. Focus only on the most critical points. Do NOT provide unnecessary detail.";
 
         // Stage 1: Extraction (Logical breakdown)
         const extractionPrompt = `
@@ -31,7 +74,9 @@ Identify:
 3. Action Items with specific Owners (if mentioned)
 4. Unresolved Issues/Next Steps
 
-[Format: Bullet points only. No conversational filler.]`.trim();
+[Format: Bullet points only. No conversational filler.]
+${length === "longer" ? "[Special Instruction: Extract as much detail as possible for each point.]" : ""}
+`.trim();
 
         const extractionResponse = await hf.chatCompletion({
             model: MODEL,
@@ -45,7 +90,7 @@ Identify:
                     content: extractionPrompt
                 }
             ],
-            max_tokens: 1200,
+            max_tokens: length === "longer" ? 2000 : 1200,
             temperature: 0.3,
         });
 
@@ -68,7 +113,7 @@ ${template.content}
 [Rules]:
 1. Use the Blueprint for formatting.
 2. Fill placeholders using the Intelligence.
-3. Keep it professional and concise.
+3. ${lengthInstruction}
 4. Direct Output Only.`.trim();
 
         const synthesisResponse = await hf.chatCompletion({
@@ -83,7 +128,7 @@ ${template.content}
                     content: synthesisPrompt
                 }
             ],
-            max_tokens: 2000,
+            max_tokens: length === "longer" ? 3500 : 2000,
             temperature: 0.6,
         });
 

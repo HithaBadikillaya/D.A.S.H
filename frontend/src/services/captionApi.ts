@@ -16,6 +16,8 @@ export type CaptionRequest = {
   templateId: string;
   platform?: string;
   tone?: string;
+  length?: "normal" | "longer";
+  currentContent?: string;
 };
 
 export async function generateCaption(payload: CaptionRequest): Promise<string> {

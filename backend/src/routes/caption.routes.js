@@ -16,7 +16,7 @@ const router = express.Router();
  */
 router.post("/generate", async (req, res) => {
   try {
-    const { inputText, templateId, platform, tone } = req.body;
+    const { inputText, templateId, platform, tone, length, currentContent } = req.body;
 
     if (!inputText || !inputText.trim()) {
       return res.status(400).json({ success: false, message: "inputText is required" });
@@ -48,7 +48,7 @@ ${templateWithContent}
 
 [Direct Output Only]:`.trim();
 
-    const resultCaption = await generateCaption(mergedPrompt);
+    const resultCaption = await generateCaption(mergedPrompt, length, currentContent);
 
     res.json({
       success: true,

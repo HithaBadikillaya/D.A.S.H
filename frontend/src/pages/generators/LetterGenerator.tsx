@@ -30,7 +30,7 @@ export default function LetterGenerator() {
     }
   }, [letterTemplates, selectedTemplateId]);
 
-  const handleGenerate = async () => {
+  const handleGenerate = async (length: "normal" | "longer" = "normal", currentContent?: string) => {
     if (!inputText.trim()) {
       setError("Please enter the letter details");
       return;
@@ -42,13 +42,15 @@ export default function LetterGenerator() {
 
     setLoading(true);
     setError("");
-    setLetter("");
+    if (length === "normal") setLetter("");
 
     try {
       const result = await generateLetter({
         inputText,
         templateId: selectedTemplateId,
         tone,
+        length,
+        currentContent
       });
 
       setLetter(result);
@@ -57,6 +59,10 @@ export default function LetterGenerator() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleExpand = () => {
+    handleGenerate("longer", letter);
   };
 
   const openCreateModal = () => {
@@ -165,7 +171,7 @@ export default function LetterGenerator() {
               />
               <button
                 type="button"
-                onClick={handleGenerate}
+                onClick={() => handleGenerate()}
                 disabled={loading || templatesLoading}
                 className="w-full py-5 bg-primary text-primary-foreground text-xl font-black rounded-2xl hover:brightness-110 shadow-lg active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-3 uppercase tracking-tighter"
               >
@@ -284,7 +290,17 @@ export default function LetterGenerator() {
                         <span className="text-[10px] font-black text-primary tracking-[0.3em] uppercase">All done!</span>
                         <h4 className="text-3xl font-black text-foreground tracking-tighter">Here's your letter</h4>
                       </div>
-                      <ExportOptions content={letter} filename="letter" />
+                      <div className="flex gap-4">
+                        <button
+                          type="button"
+                          onClick={handleExpand}
+                          disabled={loading}
+                          className="px-8 py-4 rounded-full font-black text-sm tracking-tighter transition-all shadow-lg flex items-center gap-2 bg-primary/10 text-primary border-2 border-primary/20 hover:bg-primary/20 hover:scale-105 disabled:opacity-50 disabled:scale-100"
+                        >
+                          {loading ? "EXPANDING..." : "EXPAND"}
+                        </button>
+                        <ExportOptions content={letter} filename="letter" />
+                      </div>
                     </div>
 
                     <div className="relative group">

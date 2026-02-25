@@ -178,7 +178,7 @@ async function processMediaJob(jobId, originalFilePath) {
 
 router.post("/generate", async (req, res) => {
     try {
-        const { transcriptText, templateId, meetingTitle } = req.body;
+        const { transcriptText, templateId, meetingTitle, length, currentContent } = req.body;
 
         if (!transcriptText || !transcriptText.trim()) {
             return res.status(400).json({
@@ -195,7 +195,7 @@ router.post("/generate", async (req, res) => {
             });
         }
 
-        const mom = await generateMoM(transcriptText, template, meetingTitle);
+        const mom = await generateMoM(transcriptText, template, meetingTitle, length, currentContent);
 
         res.json({
             success: true,
