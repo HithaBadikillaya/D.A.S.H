@@ -6,7 +6,8 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - ./backend/src:/app/src
+      - ./backend:/app
+      - /app/node_modules
       - ./backend/uploads:/app/uploads
     env_file:
       - ./backend/.env
@@ -19,7 +20,8 @@ services:
     ports:
       - "5173:5173"
     volumes:
-      - ./frontend/src:/app/src
+      - ./frontend:/app
+      - /app/node_modules
     env_file:
       - ./frontend/.env
     restart: always
