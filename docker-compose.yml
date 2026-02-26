@@ -1,0 +1,36 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: papertrail-backend
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/uploads:/app/uploads
+    env_file:
+      - ./backend/.env
+    restart: always
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: papertrail-frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend/src:/app/src
+    env_file:
+      - ./frontend/.env
+    restart: always
+    depends_on:
+      - backend
+
+  whisper:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: whisper
+    volumes:
+      - ./backend/uploads:/media
+    restart: always

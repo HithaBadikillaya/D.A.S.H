@@ -42,11 +42,12 @@ function toDockerHostPath(absPath) {
 
 /**
  * Main flow for MoM: Chunks are saved to /uploads folder.
- * Instead of just polling (which fails when watcher doesn't see file events),
- * we now explicitly trigger the transcription script via docker exec or run.
+ * In the Docker Compose environment, the backend container and whisper container
+ * share a volume. The backend writes the file, and the whisper watcher 
+ * (running in its own container) processes it. We just poll for the result.
  */
 export async function transcribeChunks(chunkPaths, onProgress = () => { }) {
-    console.log(`[Whisper-Backend] Processing ${chunkPaths.length} transcriptions (explicit-trigger).`);
+    console.log(`[Whisper-Backend] Processing ${chunkPaths.length} transcriptions (Volume-Polling).`);
 
     const total = chunkPaths.length;
     const transcripts = [];
@@ -56,8 +57,7 @@ export async function transcribeChunks(chunkPaths, onProgress = () => { }) {
         onProgress(`Transcribing Chunk ${i + 1}/${total}...`, Math.round((i / total) * 100));
 
         try {
-            // We explicitly run the transcription to bypass inotify issues
-            const text = await manualTranscribe(chunkFile);
+            const text = await pollForResult(chunkFile);
             transcripts.push(text);
         } catch (err) {
             console.error(`[Whisper-Backend] Error on chunk ${i}:`, err.message);
@@ -70,106 +70,30 @@ export async function transcribeChunks(chunkPaths, onProgress = () => { }) {
 }
 
 /**
- * Testing/Manual trigger: Explicitly runs whisper-cli inside a new container.
- * This bypasses the potentially flawed run-whisper.sh and ensures model path is correct.
+ * Polls the filesystem for the expected .json output from Whisper.
+ */
+async function pollForResult(filePath, timeoutMs = 300000) { // 5 min timeout
+    const jsonPath = `${filePath}.json`;
+    const start = Date.now();
+
+    console.log(`[Whisper-Poll] Waiting for: ${path.basename(jsonPath)}`);
+
+    while (Date.now() - start < timeoutMs) {
+        if (fs.existsSync(jsonPath)) {
+            console.log(`[Whisper-Poll] Found result after ${Math.round((Date.now() - start) / 1000)}s`);
+            return await parseWhisperJson(filePath);
+        }
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Poll every 2s
+    }
+
+    throw new Error(`Transcription timed out for ${path.basename(filePath)} after 5 minutes.`);
+}
+
+/**
+ * Legacy/Testing: In Compose mode, we just use polling.
  */
 export async function manualTranscribe(filePath) {
-    const filename = path.basename(filePath);
-    // Calculate path relative to UPLOAD_DIR (which is mounted to /media)
-    const UPLOAD_DIR = path.resolve(process.cwd(), "uploads");
-    const relativePath = path.relative(UPLOAD_DIR, filePath).replace(/\\/g, "/");
-    const containerPath = `/media/${relativePath}`;
-
-    const hostDir = toDockerHostPath(path.dirname(filePath));
-
-    console.log(`[Whisper-Manual] Triggering transcription for: ${relativePath}`);
-
-    return new Promise(async (resolve, reject) => {
-        let isRunning = false;
-        try {
-            const checkProc = spawn("docker", ["inspect", "-f", "{{.State.Running}}", DOCKER_CONTAINER_NAME], { shell: false });
-            let output = "";
-            checkProc.stdout.on("data", (d) => output += d.toString());
-            await new Promise((res) => checkProc.on("close", (code) => {
-                if (code === 0 && output.trim() === "true") isRunning = true;
-                res();
-            }));
-        } catch (e) {
-            console.log(`[Whisper-Docker] Container ${DOCKER_CONTAINER_NAME} not found or error checking status.`);
-        }
-
-        let args;
-        if (isRunning) {
-            console.log(`[Whisper-Docker] Using existing container: ${DOCKER_CONTAINER_NAME}`);
-            // docker exec -w /media whisper-backend /whisper.cpp/build/bin/whisper-cli ...
-            args = [
-                "exec",
-                "-w", "/media",
-                DOCKER_CONTAINER_NAME,
-                "/whisper.cpp/build/bin/whisper-cli",
-                "-m", "/whisper.cpp/models/ggml-base.en.bin",
-                containerPath,
-                "--output-json",
-                "-of", containerPath
-            ];
-        } else {
-            console.log(`[Whisper-Docker] Starting new temporary container (run --rm)`);
-            args = [
-                "run", "--rm",
-                "--name", `${DOCKER_CONTAINER_NAME}-${Date.now()}`,
-                "-v", `${hostDir}:/media`,
-                "-w", "/media",
-                DOCKER_IMAGE,
-                "/whisper.cpp/build/bin/whisper-cli",
-                "-m", "/whisper.cpp/models/ggml-base.en.bin",
-                `/media/${filename}`,
-                "--output-json",
-                "-of", `/media/${filename}`
-            ];
-        }
-
-        console.log(`[Whisper-Docker] Executing: docker ${args.join(" ")}`);
-
-        const proc = spawn("docker", args, {
-            stdio: ["ignore", "pipe", "pipe"],
-            shell: false,
-        });
-
-        let stderrBuf = "";
-        let stdoutBuf = "";
-
-        proc.stdout.on("data", (data) => {
-            const chunk = data.toString();
-            stdoutBuf += chunk;
-            process.stdout.write(chunk);
-        });
-
-        proc.stderr.on("data", (data) => {
-            const chunk = data.toString();
-            stderrBuf += chunk;
-            process.stderr.write(chunk);
-        });
-
-        proc.on("error", (err) => {
-            console.error(`[Whisper-Docker] Spawn error:`, err);
-            reject(new Error(`Docker spawn error: ${err.message}`));
-        });
-
-        proc.on("close", async (code) => {
-            if (code !== 0) {
-                console.error(`[Whisper-Docker] Command exited with code ${code}`);
-                return reject(new Error(`Whisper-Docker failed (code ${code}).\nSee logs above for details.`));
-            }
-
-            try {
-                // The whisper-cli with -of /media/filename produces /media/filename.json
-                const text = await parseWhisperJson(filePath);
-                resolve(text);
-            } catch (err) {
-                reject(err);
-            }
-        });
-    });
+    return pollForResult(filePath);
 }
 
 /**
